@@ -1,4 +1,5 @@
 body {
+  overflow-x: hidden;
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
     "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
@@ -10,4 +11,60 @@ body {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
+}
+
+a {
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* GLOBAL STYLES */
+
+.register-animation-enter {
+  opacity: 0;
+  transform: translateY(-40px);
+}
+
+.register-animation-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 300ms, transform 300ms;
+}
+
+.register-animation-exit {
+  opacity: 1;
+}
+
+.register-animation-exit-active {
+  opacity: 0;
+  transform: translateY(-40px);
+  transition: opacity 200ms, transform 200ms;
+}
+
+@-webkit-keyframes gradientAnimate {
+  0% { background-position: 17% 0% }
+  50% { background-position: 84% 100% }
+  100% { background-position: 17% 0% }
+}
+@-moz-keyframes gradientAnimate {
+  0% { background-position: 17% 0% }
+  50% { background-position: 84% 100% }
+  100% { background-position: 17% 0% }
+}
+@keyframes gradientAnimate { 
+  0% { background-position: 17% 0% }
+  50% { background-position: 84% 100% }
+  100% { background-position: 17% 0% }
+}
+
+#gradient {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(48deg, #aa0000, #df0672, #9404e7);
+  background-size: 600% 600%;
+  
+  -webkit-animation: gradientAnimate 5s ease infinite;
+  -moz-animation: gradientAnimate 5s ease infinite;
+  animation: gradientAnimate 5s ease infinite;
 }
