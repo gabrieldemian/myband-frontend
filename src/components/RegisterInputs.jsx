@@ -21,6 +21,10 @@ export default function RegisterInputs (props) {
     <div>
       <TextField
         fullWidth
+        onBlur={props.handleBlur}
+        name="name"
+        error={(props.errors.name && props.touched.name)}
+        helperText={(props.errors.name && props.touched.name) && props.errors.name}
         required
         onChange={props.handleChange('name')}
         label="Seu nome"
@@ -29,20 +33,26 @@ export default function RegisterInputs (props) {
       <TextField
         fullWidth
         required
+        error={(props.errors.bio && props.touched.bio)}
+        onBlur={props.handleBlur}
+        helperText={(props.errors.bio && props.touched.bio) && props.errors.bio}
         multiline
+        name="bio"
         rows="4"
         onChange={props.handleChange('bio')}
         label="Sobre você"
       />
 
-      <FormHelperText>Conte um pouco sobre suas habilidades, e sua carreira</FormHelperText>
-
       <FormControl fullWidth>
-        <InputLabel htmlFor="select-multiple-chip">Instrumentos</InputLabel>
+        <InputLabel error={(props.errors.instruments && props.touched.instruments)} htmlFor="select-multiple-chip">Instrumentos</InputLabel>
 
         <Select
           multiple
           value={props.instruments}
+          error={(props.errors.instruments && props.touched.instruments)}
+          onBlur={props.handleBlur}
+          name="instruments"
+          helperText={(props.errors.instruments && props.touched.instruments) && props.errors.instruments}
           onChange={props.handleChange('instruments')}
           input={<Input id="select-multiple-chip" />}
           renderValue={selected => (
@@ -63,7 +73,9 @@ export default function RegisterInputs (props) {
         ))}
 
       </Select>
-      <FormHelperText>Você pode escolher mais de um</FormHelperText>
+
+      <FormHelperText error>{(props.errors.instruments && props.touched.instruments) && props.errors.instruments}</FormHelperText>
+
       </FormControl>
     </div>
   )

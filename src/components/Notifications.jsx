@@ -1,7 +1,7 @@
 import React from 'react'
-import { List, ListItem, ListItemAvatar, Avatar, ListItemText, Typography, Divider, makeStyles, Button } from '@material-ui/core';
+import { List, ListItem, ListItemText, Typography, Divider, makeStyles, Button } from '@material-ui/core';
 import api from '../utils/api';
-import { useStateValue } from '../services/StateProvider';
+import { toast } from 'react-toastify';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -11,29 +11,32 @@ const useStyles = makeStyles(theme => ({
   },
   inline: {
     display: 'inline',
+  },
+  notificationTitle: {
+    fontWeight: 'bold',
+    marginBottom: theme.spacing(1)
   }
 }));
 
-export default function Notifications({ invites, setInvites }) {
+export default function Notifications({ notifications, getNotifications, setOpenNotificationMenu }) {
 
   const classes = useStyles();
-  const [ {userGlobal}, dispatch ] = useStateValue();
 
   const reject = async (index) => {
 
-    const deleteNotification = await api.delete('/invite', {
+    await api.delete('/notification', {
       headers: {
         index,
         userid: localStorage.getItem('userId')
       }
     });
 
-    setInvites(deleteNotification.data.invites);
+    getNotifications();
   };
   
   const accept = async (bandId, index, instrument) => {
     
-    const acceptNotification = await api.get('/invite', {
+    const acceptNotification = await api.get('/notification', {
       headers: {
         bandid: bandId,
         index,
@@ -42,41 +45,46 @@ export default function Notifications({ invites, setInvites }) {
       }
     });
 
-    dispatch({
-      type: 'acceptInvite',
-      acceptInvite: { acceptInvite: true}
-    });
+    if (acceptNotification.data.success) {
 
-    setInvites(acceptNotification.data.invites);
+      setOpenNotificationMenu(false);
+      getNotifications();
+      toast.success('Parabéns, você entrou na banda!')
+
+    } else {
+
+      toast.error(acceptNotification.data.msg)
+    }
+
+    
   };
 
   return (
     <List dense={true} className={classes.root}>
-      {invites.length > 0 ? (invites.map((invite, index) => (
+      {notifications.length > 0 ? (notifications.map((notification, index) => (
         <div key={index}>
 
-        <ListItem alignItems="flex-start">
-
-          <ListItemAvatar>
-            <Avatar alt={invite.bandName} src={require("../assets/patricia.jpeg")} />
-          </ListItemAvatar>
+        <ListItem>
 
           <ListItemText
-            primary="Convite de banda"
-            secondary={
-              <React.Fragment>
+            primary={
+              <>
                 <Typography
                   component="span"
                   variant="body2"
                   className={classes.inline}
                   color="textPrimary"
                 >
-                  Você foi convidado para tocar {invite.instrument} na banda "{invite.bandName}"
+                  <Typography className={classes.notificationTitle}>Convite de banda</Typography>
+                  {notification.description}
                 </Typography>
                 <br />
-                <Button onClick={() => accept(invite.bandId, index, invite.instrument)} color="primary">Aceitar</Button>
-                <Button onClick={() => reject(index)} color="secondary">Rejeitar</Button>
-              </React.Fragment>
+                {notification.type === 'band' ?
+                  <Button onClick={() => accept(notification.bandId, index, notification.instrument)} color="primary">Aceitar</Button>:
+                  ''
+                }
+                <Button onClick={() => reject(index)} color="secondary">{notification.type === 'band' ? 'Rejeitar' : 'Fechar'}</Button>
+              </>
             }
           />
         </ListItem>

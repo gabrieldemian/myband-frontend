@@ -216,7 +216,7 @@ export default function AutoComplete(props) {
           styles={selectStyles}
           inputId="react-select-multiple"
           TextFieldProps={{
-            label: 'Convidar músicos para a banda',
+            // label: 'Convidar músicos para a banda',
             InputLabelProps: {
               htmlFor: 'react-select-multiple',
               shrink: true,

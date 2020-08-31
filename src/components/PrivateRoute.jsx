@@ -10,7 +10,7 @@ export default function PrivateRoute ({ component: Component, ...rest }) {
 
   return (
     <Route {...rest} render={(props) => (
-      (logged || localStorage.getItem('logged') === 'true') ? <Component {...props} /> : <Redirect to='/login' />
+      (logged || localStorage.getItem('token')) ? <Component {...props} {...rest} /> : <Redirect to='/login' />
     )}/>
   )
 }

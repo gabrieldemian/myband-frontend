@@ -15,6 +15,9 @@ const useStyles = makeStyles(theme => ({
   },
   avatar: {
     width: 70,
+    height: 70,
+    objectFit: 'cover',
+    borderRadius: '100%',
     marginTop: theme.spacing(3),
     marginBottom: theme.spacing(1)
   },
@@ -40,12 +43,12 @@ export default function CreateBand(propsComponent) {
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'))
   const classes = useStyles();
   const [open, setOpen] = React.useState(false);
-  const [invites, setInvites] = React.useState([]);
+  const [notifications, setNotifications] = React.useState([]);
   const [valuesForm, setValuesForm] = React.useState({
     name: '',
     bio: '',
     instrument: '',
-    invites: [],
+    notifications: [],
     genres: []
   });
 
@@ -68,14 +71,14 @@ export default function CreateBand(propsComponent) {
       fullScreen={fullScreen}
     >
       <Formik
-        initialValues={{ ...valuesForm, invites }}
+        initialValues={{ ...valuesForm, notifications }}
         onSubmit={async (values, { setSubmitting }) => {
 
           setSubmitting(true);
 
-          const invites = values.invites.map(inn => {
+          const notifications = values.notifications.map(inn => {
             return {_id: inn._id, instrument: inn.instrument}
-          })
+          });
 
           // first create the band
           const newBand = await api.post('/band', {
@@ -83,10 +86,9 @@ export default function CreateBand(propsComponent) {
             name: values.name,
             bio: values.bio,
             genres: values.genres,
+            instrument: values.instrument,
             integrants: [{
-              name: propsComponent.userName,
               _id: localStorage.getItem('userId'),
-              instrument: values.instrument
             }]
           });
 
@@ -95,14 +97,15 @@ export default function CreateBand(propsComponent) {
             return console.log('band error: ', newBand.data);
           }
 
-          // and then send the invite list to the server
-          await api.post('/invite', {
+          // and then send the notification list to the server
+          await api.post('/notification', {
             bandId: newBand.data._id,
             bandName: newBand.data.name,
-            invites
+            type: 'band',
+            notifications
           });
 
-          console.log('create band: ', newBand.data)
+          console.log('create band: ', newBand.data);
           setSubmitting(false);
           propsComponent.updateBand(newBand.data);
           propsComponent.setOpen(false);
@@ -119,7 +122,7 @@ export default function CreateBand(propsComponent) {
             .required('Campo obrigatório'),
           instrument: Yup.string()
             .required('Campo obrigatório'),
-          invites: Yup.array()
+          notifications: Yup.array()
             .of(
               Yup.object().shape({
                 instrument: Yup.string()
@@ -134,7 +137,6 @@ export default function CreateBand(propsComponent) {
             values,
             touched,
             errors,
-            isSubmitting,
             isValid,
             handleChange,
             handleBlur,
@@ -151,6 +153,7 @@ export default function CreateBand(propsComponent) {
                   fullWidth
                   required
                   onBlur={handleBlur}
+                  error={(errors.name && touched.name)}
                   helperText={(errors.name && touched.name) && errors.name}
                   margin="normal"
                   label="Nome da banda"
@@ -160,6 +163,7 @@ export default function CreateBand(propsComponent) {
               <Grid item xs={12}>
                 <TextField
                   onChange={handleChange('bio')}
+                  error={(errors.bio && touched.bio)}
                   fullWidth
                   onBlur={handleBlur}
                   helperText={(errors.bio && touched.bio) && errors.bio}
@@ -174,11 +178,12 @@ export default function CreateBand(propsComponent) {
 
               <Grid item xs={12}>
                 <FormControl className={classes.formControl}>
-                  <InputLabel htmlFor="select-multiple-chip">Gêneros musicais</InputLabel>
+                  <InputLabel error={(props.errors.genres && props.touched.genres)} htmlFor="select-multiple-chip">Gêneros musicais</InputLabel>
 
                   <Select
                     multiple
                     name="genres"
+                    error={(errors.genres && touched.genres)}
                     helperText={(errors.genres && touched.genres) && errors.genres}
                     onBlur={handleBlur}
                     value={values.genres}
@@ -202,17 +207,18 @@ export default function CreateBand(propsComponent) {
                     ))}
 
                   </Select>
-                  <FormHelperText>{(errors.genres && touched.genres) && errors.genres}</FormHelperText>
+                  <FormHelperText error>{(errors.genres && touched.genres) && errors.genres}</FormHelperText>
                 </FormControl>
               </Grid>
 
               <Grid item xs={12}>
                 <FormControl className={classes.formControl}>
-                  <InputLabel htmlFor="select-multiple-chip">O que você irá tocar?</InputLabel>
+                  <InputLabel error={(props.errors.instrument && props.touched.instrument)} htmlFor="select-multiple-chip">O que você irá tocar?</InputLabel>
 
                   <Select
                     value={values.instrument}
                     onChange={handleChange('instrument')}
+                    error={(errors.error && touched.error)}
                     onBlur={handleBlur}
                     name="instrument"
                     helperText={(errors.instrument && touched.instrument) && errors.instrument}
@@ -232,29 +238,29 @@ export default function CreateBand(propsComponent) {
                     ))}
                   </Select>
                   
-                  <FormHelperText>{(errors.instrument && touched.instrument) && errors.instrument}</FormHelperText>
+                  <FormHelperText error>{(errors.instrument && touched.instrument) && errors.instrument}</FormHelperText>
                 </FormControl>
               </Grid>
 
               <Grid item xs={12}>
                 <AutoComplete
-                  name="invites"
-                  handleChange={handleChange('invites')}
-                  helperText={(errors.invites && touched.invites) && errors.invites}
+                  name="notifications"
+                  handleChange={handleChange('notifications')}
+                  helperText={(errors.notifications && touched.notifications) && errors.notifications}
                   onBlur={handleBlur}
                 />
               </Grid>
 
               <Grid item container spacing={4}>
 
-                {(values.invites.map((invite, index) => (
+                {values.notifications ? (values.notifications.map((notification, index) => (
 
                   <Grid item key={index} className={classes.integrant}>
 
-                    <img src={require('../assets/defaultAvatar.png')} className={classes.avatar} alt="avatar" />
+                    <img src={notification.avatar ? notification.avatar : require('../assets/defaultAvatar.png')} className={classes.avatar} alt="avatar" />
 
-                    <Typography gutterBottom>{invite.name}</Typography>
-                    <Typography>{invite.instrument !== '' ? invite.instrument : ''}</Typography>
+                    <Typography gutterBottom>{notification.name}</Typography>
+                    <Typography>{notification.instrument !== '' ? notification.instrument : ''}</Typography>
 
                     <FormControl className={classes.formControl}>
                       <InputLabel htmlFor="role">Irá tocar...</InputLabel>
@@ -262,27 +268,27 @@ export default function CreateBand(propsComponent) {
                         onClose={() => setOpen(false)}
                         onOpen={() => setOpen(true)}
                         onBlur={handleBlur}
-                        value={values.invites[index].instrument}
-                        name={`invites[${index}].instrument`}
+                        value={values.notifications[index].instrument}
+                        name={`notifications[${index}].instrument`}
                         onChange={(e) => {
-                          invite.instrument = e.target.value
+                          notification.instrument = e.target.value
                         }}
                         inputProps={{
                           name: 'Instrumento',
                           id: 'role'
                         }}
                       >
-                        {invite.instruments.map((instrument, index) => (
+                        {notification.instruments.map((instrument, index) => (
                           <MenuItem key={index} value={instrument}>{instrument}</MenuItem>
                         ))}
                       </Select>
                     </FormControl>
 
                     <FormHelperText>
-                      {(errors.invites && touched.invites) && errors.invites}
+                      {(errors.notifications && touched.notifications) && errors.notifications}
                     </FormHelperText>
                   </Grid>
-                )))}
+                ))) : ''}
               </Grid>
 
               <Grid item xs={12}>
@@ -291,7 +297,7 @@ export default function CreateBand(propsComponent) {
                   type="submit"
                   disabled={!isValid}
                   onClick={() => {
-                    console.log('invites', values.invites)
+                    console.log('notifications', values.notifications)
                   }}
                   variant="contained"
                   color="primary"

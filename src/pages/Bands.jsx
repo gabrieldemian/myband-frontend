@@ -3,7 +3,7 @@ import React from 'react'
 export default function Bands() {
   return (
     <div>
-      i'm bands
+      Não implementado ainda
     </div>
   )
 }

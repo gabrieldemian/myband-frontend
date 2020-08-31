@@ -1,43 +1,53 @@
 import api from '../utils/api';
+import axios from 'axios';
+import variables from '../utils/variables';
 
-export const authenticate = async (email, password, callback) => {
+export const login = (email, password) => {
 
-  // authenticate on the backend, and then
-  try {
+  // authenticate on the backend
 
-    const response = await api.post('/login', {
-      email,
-      password
-    });
+  console.log('authenticate ');
 
-    console.log('response: ', response.data);
+  return axios.post(variables.serverURL + '/login', {
+    email,
+    password
+  })
+  .then(response => {
+    console.log('response authhandler', response.data)
+    if (response.data.token) {
+      localStorage.setItem("userId", response.data.userId);
+      localStorage.setItem("token", response.data.token);
+    }
 
-    localStorage.setItem('logged', true);
-    localStorage.setItem('userId', response.data.userId);
-    localStorage.setItem('token', response.data.token);
-    callback(response.data);
+    return response.data;
+  });
 
-  } catch (e) {
-
-    callback(e)
-  }
 }
 
-export const register = async (data, callback) => {
+export const logout = () => {
+  localStorage.removeItem("userId");
+  localStorage.removeItem('token');
+}
+
+export const getUser = () => {
+  return localStorage.getItem('userId');
+}
+
+export const register = (data) => {
 
   console.log('register')
 
-  try {
+  return api.post('/user', {
+    ...data,
+    avatar: ''
+  }).then(response => {
+    console.log('response authhandler', response.data);
+    if (response.data.success) {
+      localStorage.setItem("userId", response.data.userId);
+      localStorage.setItem("token", response.data.token);
+    }
 
-    const response = await api.post('/user', {
-      ...data
-    });
+    return response.data;
+  })
 
-    console.log('response register: ', response.data);
-    callback(response.data);
-
-  } catch (e) {
-
-    callback(e)
-  }
 }

@@ -12,7 +12,7 @@ function App() {
 
   // GLOBAL STATE
   const initialState = {
-    userGlobal: { logged: false, acceptInvite: false }
+    userGlobal: { logged: false, acceptInvite: false, userBand: {}, notify: [] }
   };
   
   const reducer = (state, action) => {
@@ -22,6 +22,18 @@ function App() {
           ...state,
           userGlobal: action.newUser
         };
+
+        case 'updateUserBand':
+        return {
+          ...state,
+          userGlobal: action.userBand
+        };
+
+      case 'notify':
+      return {
+        ...state,
+        userGlobal: action.newUser
+      };
 
       case 'acceptInvite':
         return {
